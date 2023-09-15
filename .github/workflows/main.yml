@@ -33,5 +33,5 @@ jobs:
         TF_VAR_SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
       run: |
         terraform apply -auto-approve
-        echo "instance_public_ip=$(terraform output instance_public_ip)" >> $GITHUB_ENV
+        echo "instance_public_ip=$(terraform output instance_public_ip)"
 
