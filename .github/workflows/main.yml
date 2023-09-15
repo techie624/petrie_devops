@@ -1,6 +1,7 @@
 name: Deploy EC2 with Terraform
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main # Change to your desired branch
