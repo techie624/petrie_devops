@@ -5,6 +5,9 @@ on:
     branches:
       - main # Change to your desired branch
 
+env:
+  TF_LOG: TRACE
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -26,5 +29,5 @@ jobs:
         SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
       run: |
         terraform apply -auto-approve
-        echo "Instance Public IP: $(terraform output instance_public_ip)"
+        echo "instance_public_ip=$(terraform output instance_public_ip)" >> $GITHUB_ENV
 
