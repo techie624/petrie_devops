@@ -30,20 +30,6 @@ resource "aws_instance" "my_instance" {
                 chmod 600 /home/rpetrie/.ssh/authorized_keys
                 chown -R rpetrie:rpetrie /home/rpetrie/.ssh
 
-                # Update the system
-                apt-get update
-
-                # Install the requested packages
-                apt-get install -y vim tree htop tmux curl git
-
-                # Install Docker
-                apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                apt-get update
-                apt-get install -y docker-ce
-                usermod -aG docker rpetrie
-
                 # Set hostname
                 hostnamectl set-hostname testing
 
@@ -58,10 +44,24 @@ resource "aws_instance" "my_instance" {
                 # Ensure ownership is correct
                 chown rpetrie:rpetrie /home/rpetrie/.bashrc
 
+                # Update the system
+                apt-get update
+
+                # Install the requested packages
+                apt-get install -y vim tree htop tmux curl git
+
+                # Install Docker
+                apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+                add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+                apt-get update
+                apt-get install -y docker-ce
+                usermod -aG docker rpetrie
+
               EOF
 
   tags = {
-    Name = "MyInstance"
+    Name = "TestingInstance"
   }
 }
 
