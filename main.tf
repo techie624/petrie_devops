@@ -81,3 +81,13 @@ resource "aws_key_pair" "my_key" {
   key_name   = "my_key_pair"
   public_key = var.SSH_PUBLIC_KEY
 }
+
+terraform {
+  backend "s3" {
+    bucket = "rpetrie-tfstate"
+    key    = "statefile.tfstate"
+    region = "us-east-1"
+    # If using DynamoDB for state locking (recommended):
+    # dynamodb_table = "your-dynamodb-table-name"
+  }
+}
