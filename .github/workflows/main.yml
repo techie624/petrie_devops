@@ -46,12 +46,23 @@ jobs:
         TF_VAR_ETHORIAN_NET_HOSTED_ZONE_ID: ${{ secrets.ETHORIAN_NET_HOSTED_ZONE_ID }}
       run: terraform plan -out=tfplan
 
+    - name: Upload plan
+      uses: actions/upload-artifact@v2
+      with:
+        name: tfplan
+        path: tfplan
+
   apply:
     needs: plan
     if: github.event.inputs.apply == 'true'
     runs-on: ubuntu-latest
 
     steps:
+    - name: Download plan
+      uses: actions/download-artifact@v2
+      with:
+        name: tfplan
+
     - name: Checkout repository
       uses: actions/checkout@v2
 
@@ -77,5 +88,5 @@ jobs:
         TF_VAR_OPEN_SSH_PRIVATE_KEY: ${{ secrets.OPEN_SSH_PRIVATE_KEY }}
         TF_VAR_ETHORIAN_NET_HOSTED_ZONE_ID: ${{ secrets.ETHORIAN_NET_HOSTED_ZONE_ID }}
       run: |
-        terraform apply -auto-approve
+        terraform apply -auto-approve tfplan
         echo "instance_public_ip=$(terraform output instance_public_ip)"
