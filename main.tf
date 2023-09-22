@@ -147,3 +147,11 @@ resource "aws_route53_record" "example" {
   ttl     = "300"
   records = [aws_instance.my_instance.public_ip]
 }
+
+resource "aws_route53_record" "subdomain_record" {
+  name    = "home.ethorian.net"
+  type    = "A"
+  zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
+  ttl     = "300"
+  records = [aws_instance.my_instance.public_ip]
+}
