@@ -70,7 +70,6 @@ resource "aws_instance" "ethorian_net_home" {
 
                 # For the default ubuntu user
                 echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/authorized_keys
-                echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/id_rsa.pub
                 chmod 600 /home/ubuntu/.ssh/authorized_keys
                 chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
 
@@ -84,6 +83,9 @@ resource "aws_instance" "ethorian_net_home" {
                 chmod 700 /home/rpetrie/.ssh
                 chmod 600 /home/rpetrie/.ssh/authorized_keys
                 chown -R rpetrie:rpetrie /home/rpetrie/.ssh
+                echo "${var.SSH_PUBLIC_KEY}" > /home/rpetrie/.ssh/id_rsa.pub
+                chmod 600 /home/rpetrie/.ssh/authorized_keys
+
 
                 # Set hostname
                 hostnamectl set-hostname ethoria-home
@@ -93,6 +95,7 @@ resource "aws_instance" "ethorian_net_home" {
 
                 # Custom settings
                 alias ll="ls -larth"
+                alias vi="vim"
                 alias ..="cd .."
                 EOL
 
@@ -122,7 +125,9 @@ resource "aws_instance" "ethorian_net_home" {
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
                 # Clone the repository
-                git clone git@github.com:techie624/ethoria_saga.git /home/rpetrie/workspace
+                su rpetrie
+                cd /home/rpetrie/workspace
+                git clone git@github.com:techie624/ethoria_saga.git 
 
                 # Run the script to start the container
                 bash /home/rpetrie/workspace/run.sh
