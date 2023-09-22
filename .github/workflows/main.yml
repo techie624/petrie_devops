@@ -2,9 +2,11 @@ name: Deploy EC2 with Terraform
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - main # Change to your desired branch
+    inputs:
+      apply:
+        description: 'Apply the Terraform plan?'
+        required: true
+        default: 'false'
 
 env:
   TF_LOG: TRACE
@@ -14,7 +16,7 @@ env:
   ETHORIAN_NET_HOSTED_ZONE_ID: ${{secrets.ETHORIAN_NET_HOSTED_ZONE_ID}}
 
 jobs:
-  deploy:
+  plan:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,6 +36,35 @@ jobs:
     - name: Terraform Initialize
       run: terraform init
 
+    - name: Terraform Plan
+      env:
+        TF_VAR_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        TF_VAR_AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        TF_VAR_SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
+        TF_VAR_SSH_PUBLIC_KEY_HOME: ${{ secrets.SSH_PUBLIC_KEY_HOME }}
+        TF_VAR_OPEN_SSH_PRIVATE_KEY: ${{ secrets.OPEN_SSH_PRIVATE_KEY }}
+        TF_VAR_ETHORIAN_NET_HOSTED_ZONE_ID: ${{ secrets.ETHORIAN_NET_HOSTED_ZONE_ID }}
+      run: terraform plan -out=tfplan
+
+  apply:
+    needs: plan
+    if: github.event.inputs.apply == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+
     - name: Terraform Apply
       env:
         TF_VAR_AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -45,4 +76,3 @@ jobs:
       run: |
         terraform apply -auto-approve
         echo "instance_public_ip=$(terraform output instance_public_ip)"
-
