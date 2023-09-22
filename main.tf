@@ -4,8 +4,8 @@ provider "aws" {
   secret_key = var.AWS_SECRET_ACCESS_KEY
 }
 
-resource "aws_security_group" "example" {
-  name        = "example"
+resource "aws_security_group" "ethorian_net_home_sg" {
+  name        = "ethorian_net_home_sg"
   description = "Allow SSH inbound and all outbound traffic"
 
   egress {
@@ -37,19 +37,19 @@ resource "aws_security_group" "example" {
   }
 
   tags = {
-    Name = "example"
+    Name = "ethorian_net_home_sg"
   }
 }
 
-resource "aws_instance" "my_instance" {
+resource "aws_instance" "ethorian_net_home" {
   ami           = "ami-053b0d53c279acc90" # Ubuntu 22.04 AMI ID (64-bit)
   instance_type = "t2.micro"
 
-  security_groups = [aws_security_group.example.name]
+  security_groups = [aws_security_group.ethorian_net_home_sg.name]
 
   key_name = aws_key_pair.my_key.key_name
 
-  vpc_security_group_ids = [aws_security_group.example.id]
+  vpc_security_group_ids = [aws_security_group.ethorian_net_home_sg.id]
 
 
   user_data = <<-EOF
@@ -61,6 +61,9 @@ resource "aws_instance" "my_instance" {
                 # TAG
                 TAG=$(date +"%Y%m%d_%H%M%S")
                 START_TIME=$(date +%s)
+
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+                ### Configure instance
 
                 # Set date time to EST
                 timedatectl set-timezone America/New_York
@@ -109,6 +112,26 @@ resource "aws_instance" "my_instance" {
                 apt-get install -y docker-ce
                 usermod -aG docker rpetrie
 
+
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+                ### Clone repo and run container for site
+
+                # Create workspace directory
+                mkdir -p /home/rpetrie/workspace
+                chown rpetrie:rpetrie /home/rpetrie/workspace
+
+                # Clone the repository
+                git clone git@github.com:techie624/ethoria_saga.git /home/rpetrie/workspace
+
+                # Run the script to start the container
+                bash /home/rpetrie/workspace/run.sh
+
+                # Set up the cron job
+                echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+                ### End script and show execution time
+
                 # echo completion
                 END_TIME=$(date +%s)
                 DURATION=$((END_TIME - START_TIME))
@@ -121,7 +144,7 @@ resource "aws_instance" "my_instance" {
               EOF
 
   tags = {
-    Name = "Instance1"
+    Name = "ethorian_net_home"
   }
 }
 
@@ -140,18 +163,18 @@ terraform {
   }
 }
 
-resource "aws_route53_record" "example" {
+resource "aws_route53_record" "ethorian_net_home_r53_A" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID # replace this with your hosted zone ID
   name    = "ethorian.net"
   type    = "A"
   ttl     = "300"
-  records = [aws_instance.my_instance.public_ip]
+  records = [aws_instance.ethorian_net_home.public_ip]
 }
 
-resource "aws_route53_record" "subdomain_record" {
+resource "aws_route53_record" "ethorian_net_home_r53_sub_A" {
   name    = "home.ethorian.net"
   type    = "A"
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
   ttl     = "300"
-  records = [aws_instance.my_instance.public_ip]
+  records = [aws_instance.ethorian_net_home.public_ip]
 }
