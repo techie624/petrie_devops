@@ -9,7 +9,7 @@ on:
         default: 'false'
 
 env:
-  TF_LOG: TRACE
+  #TF_LOG: TRACE
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   SSH_PUBLIC_KEY: ${{ secrets.SSH_PUBLIC_KEY }}
