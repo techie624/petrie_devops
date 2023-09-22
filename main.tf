@@ -70,6 +70,7 @@ resource "aws_instance" "ethorian_net_home" {
 
                 # For the default ubuntu user
                 echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/authorized_keys
+                echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/id_rsa.pub
                 chmod 600 /home/ubuntu/.ssh/authorized_keys
                 chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
 
@@ -85,7 +86,7 @@ resource "aws_instance" "ethorian_net_home" {
                 chown -R rpetrie:rpetrie /home/rpetrie/.ssh
 
                 # Set hostname
-                hostnamectl set-hostname testing
+                hostnamectl set-hostname ethoria-home
 
                 # Append custom lines to rpetrie's .bashrc
                 cat <<EOL >> /home/rpetrie/.bashrc
