@@ -68,11 +68,6 @@ resource "aws_instance" "ethorian_net_home" {
                 # Set date time to EST
                 timedatectl set-timezone America/New_York
 
-                # For the default ubuntu user
-                echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/authorized_keys
-                chmod 600 /home/ubuntu/.ssh/authorized_keys
-                chown ubuntu:ubuntu /home/ubuntu/.ssh/authorized_keys
-
                 # Create the rpetrie user
                 useradd rpetrie -m -s /bin/bash
                 echo "rpetrie ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
@@ -83,8 +78,14 @@ resource "aws_instance" "ethorian_net_home" {
                 chmod 700 /home/rpetrie/.ssh
                 chmod 600 /home/rpetrie/.ssh/authorized_keys
                 chown -R rpetrie:rpetrie /home/rpetrie/.ssh
-                echo "${var.SSH_PUBLIC_KEY}" > /home/rpetrie/.ssh/id_rsa.pub
-                chmod 600 /home/rpetrie/.ssh/authorized_keys
+
+                # Set up the public and private keys for rpetrie
+                echo "${var.SSH_PUBLIC_KEY_HOME}" > /home/rpetrie/.ssh/id_rsa.pub
+                echo "${var.OPEN_SSH_PRIVATE_KEY}" > /home/rpetrie/.ssh/id_rsa
+                chmod 644 /home/rpetrie/.ssh/id_rsa.pub
+                chmod 600 /home/rpetrie/.ssh/id_rsa
+                chown rpetrie:rpetrie /home/rpetrie/.ssh/id_rsa.pub
+                chown rpetrie:rpetrie /home/rpetrie/.ssh/id_rsa
 
 
                 # Set hostname
