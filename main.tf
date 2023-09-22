@@ -64,7 +64,7 @@ resource "aws_instance" "ethorian_net_home" {
     EOT
 
     # Setting the necessary environment variables for the AWS CLI command
-    environment {
+    environment = {
       AWS_ACCESS_KEY_ID = var.AWS_ACCESS_KEY_ID
       AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY
       AWS_DEFAULT_REGION = "us-east-1"
