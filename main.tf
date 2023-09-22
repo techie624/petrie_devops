@@ -141,7 +141,7 @@ terraform {
 }
 
 resource "aws_route53_record" "example" {
-  zone_id = "var.ETHORIAN_NET_HOSTED_ZONE_ID" # replace this with your hosted zone ID
+  zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID # replace this with your hosted zone ID
   name    = "ethorian.net"
   type    = "A"
   ttl     = "300"
