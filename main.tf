@@ -97,8 +97,10 @@ resource "aws_instance" "ethorian_net_home" {
                 # Custom settings
                 alias ll="ls -larth"
                 alias vi="vim"
-                alias ..="cd .."
-                # Terminal                                       
+                alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
+                alias vialias='vim ~/.bashrc'
+                alias uucr='sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get autoclean && sudo reboot'
+                
                 # Terminal                                                                                      
                 git_branch() {                                                                                                    
                       git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'                         
@@ -142,7 +144,7 @@ resource "aws_instance" "ethorian_net_home" {
                 git clone git@github.com:techie624/ethoria_saga.git 
 
                 # Run the script to start the container
-                bash /home/rpetrie/workspace/run.sh
+                bash /home/rpetrie/workspace/ethoria_saga/run.sh
 
                 # Set up the cron job
                 echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
