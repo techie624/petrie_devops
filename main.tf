@@ -98,6 +98,13 @@ resource "aws_instance" "ethorian_net_home" {
                 alias ll="ls -larth"
                 alias vi="vim"
                 alias ..="cd .."
+                # Terminal                                       
+                # Terminal                                                                                      
+                git_branch() {                                                                                                    
+                      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'                         
+                  }                                                                                                               
+                                                                                                                
+                export PS1="\[\033[0;36m\]\[\033[0m\033[0;27m\]\u\[\033[0;37m\]@\[\033[0;31m\]\h \[\033[00;33m\][\w] \[\033[0;37m\]\$(git_branch) \[\033[95m\]\d \t \[\033[00m\]\n#~> "
                 EOL
 
                 # Ensure ownership is correct
