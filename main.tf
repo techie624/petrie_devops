@@ -41,15 +41,15 @@ resource "aws_instance" "my_instance" {
   user_data = <<-EOF
                 #!/bin/bash
 
+                # user_data takes a couple minutes to finish
+                # tail -f /var/log/cloud-init-output.log
+
                 # TAG
                 TAG=$(date +"%Y%m%d_%H%M%S")
                 START_TIME=$(date +%s)
 
                 # Set date time to EST
                 timedatectl set-timezone America/New_York
-
-                # user_data takes a couple minutes to finish
-                # tail -f /var/log/cloud-init-output.log
 
                 # For the default ubuntu user
                 echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/authorized_keys
@@ -107,7 +107,7 @@ resource "aws_instance" "my_instance" {
               EOF
 
   tags = {
-    Name = "TestingInstance"
+    Name = "Instance1"
   }
 }
 
