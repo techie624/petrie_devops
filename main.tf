@@ -169,7 +169,7 @@ terraform {
   }
 }
 
-resource "aws_route53_record" "ethorian_net_home_r53_A" {
+resource "aws_route53_record" "example" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID # replace this with your hosted zone ID
   name    = "ethorian.net"
   type    = "A"
@@ -177,7 +177,7 @@ resource "aws_route53_record" "ethorian_net_home_r53_A" {
   records = [aws_instance.ethorian_net_home.public_ip]
 }
 
-resource "aws_route53_record" "ethorian_net_home_r53_sub_A" {
+resource "aws_route53_record" "subdomain_record" {
   name    = "home.ethorian.net"
   type    = "A"
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
