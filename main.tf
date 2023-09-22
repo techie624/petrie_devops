@@ -22,6 +22,20 @@ resource "aws_security_group" "example" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name = "example"
   }
@@ -124,4 +138,12 @@ terraform {
     # If using DynamoDB for state locking (recommended):
     # dynamodb_table = "your-dynamodb-table-name"
   }
+}
+
+resource "aws_route53_record" "example" {
+  zone_id = "var.ETHORIAN_NET_HOSTED_ZONE_ID" # replace this with your hosted zone ID
+  name    = "ethorian.net"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.my_instance.public_ip]
 }
