@@ -40,6 +40,17 @@ resource "aws_instance" "my_instance" {
 
   user_data = <<-EOF
                 #!/bin/bash
+
+                # TAG
+                TAG=$(date +"%Y%m%d_%H%M%S")
+                START_TIME=$(date +%s)
+
+                # Set date time to EST
+                timedatectl set-timezone America/New_York
+
+                # user_data takes a couple minutes to finish
+                # tail -f /var/log/cloud-init-output.log
+
                 # For the default ubuntu user
                 echo "${var.SSH_PUBLIC_KEY}" > /home/ubuntu/.ssh/authorized_keys
                 chmod 600 /home/ubuntu/.ssh/authorized_keys
@@ -83,6 +94,15 @@ resource "aws_instance" "my_instance" {
                 apt-get update
                 apt-get install -y docker-ce
                 usermod -aG docker rpetrie
+
+                # echo completion
+                END_TIME=$(date +%s)
+                DURATION=$((END_TIME - START_TIME))
+                echo;
+                echo "user_data has completed!"
+                echo "Script execution time: $DURATION seconds"
+                echo "Current date/time: $TAG"
+                echo;
 
               EOF
 
