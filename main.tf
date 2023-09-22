@@ -125,6 +125,10 @@ resource "aws_instance" "ethorian_net_home" {
                 mkdir -p /home/rpetrie/workspace
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
+                # disable host key checking
+                echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
+                ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
+
                 # Clone the repository
                 su rpetrie
                 cd /home/rpetrie/workspace
