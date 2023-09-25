@@ -1,45 +1,3 @@
-provider "aws" {
-  region  = "us-east-1"
-  access_key = var.AWS_ACCESS_KEY_ID
-  secret_key = var.AWS_SECRET_ACCESS_KEY
-}
-
-resource "aws_security_group" "ethorian_net_home_sg" {
-  name        = "ethorian_net_home_sg"
-  description = "Allow SSH inbound and all outbound traffic"
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "ethorian_net_home_sg"
-  }
-}
 
 resource "aws_instance" "ethorian_net_dm" {
   ami           = "ami-053b0d53c279acc90" # Ubuntu 22.04 AMI ID (64-bit)
@@ -186,12 +144,6 @@ resource "aws_instance" "ethorian_net_dm" {
     Name = "ethorian_net_dm"
   }
 }
-
-resource "aws_key_pair" "my_key" {
-  key_name   = "my_key_pair"
-  public_key = var.SSH_PUBLIC_KEY
-}
-
 
 resource "aws_route53_record" "subdomain_record" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
