@@ -8,13 +8,7 @@ resource "aws_instance" "ethorian_net_dm" {
   key_name = aws_key_pair.my_key.key_name
 
   vpc_security_group_ids = [aws_security_group.ethorian_net_home_sg.id]
-
-    # Setting the necessary environment variables for the AWS CLI command
-    environment = {
-      AWS_ACCESS_KEY_ID = var.AWS_ACCESS_KEY_ID
-      AWS_SECRET_ACCESS_KEY = var.AWS_SECRET_ACCESS_KEY
-      AWS_DEFAULT_REGION = "us-east-1"
-    }
+  
   }
   
   user_data = <<-EOF
