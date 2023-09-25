@@ -145,7 +145,7 @@ resource "aws_instance" "ethorian_net_dm" {
   }
 }
 
-resource "aws_route53_record" "subdomain_record" {
+resource "aws_route53_record" "subdomain_record_dm" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
   name    = "dm.ethorian.net"
   type    = "A"
