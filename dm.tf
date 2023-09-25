@@ -14,7 +14,7 @@ resource "aws_instance" "ethorian_net_dm" {
       # Fetch public IP from EC2 instance and Route 53, then compare.
       # If they don't match, exit with an error.
       CURRENT_IP=$(aws ec2 describe-instances --instance-ids ${self.id} --query 'Reservations[].Instances[].PublicIpAddress' --output text)
-      ROUTE53_IP=$(aws route53 list-resource-record-sets --hosted-zone-id ${var.ETHORIAN_NET_HOSTED_ZONE_ID} --query 'ResourceRecordSets[?Name==`home.ethorian.net.`].ResourceRecords[0].Value' --output text)
+      ROUTE53_IP=$(aws route53 list-resource-record-sets --hosted-zone-id ${var.ETHORIAN_NET_HOSTED_ZONE_ID} --query 'ResourceRecordSets[?Name==`dm.ethorian.net.`].ResourceRecords[0].Value' --output text)
       if [ "$CURRENT_IP" != "$ROUTE53_IP" ]; then
         echo "IP mismatch!"
         exit 1
