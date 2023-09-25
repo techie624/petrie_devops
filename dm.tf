@@ -8,18 +8,6 @@ resource "aws_instance" "ethorian_net_dm" {
   key_name = aws_key_pair.my_key.key_name
 
   vpc_security_group_ids = [aws_security_group.ethorian_net_home_sg.id]
-  
-  provisioner "local-exec" {
-    command = <<-EOT
-      # Fetch public IP from EC2 instance and Route 53, then compare.
-      # If they don't match, exit with an error.
-      CURRENT_IP=$(aws ec2 describe-instances --instance-ids ${self.id} --query 'Reservations[].Instances[].PublicIpAddress' --output text)
-      ROUTE53_IP=$(aws route53 list-resource-record-sets --hosted-zone-id ${var.ETHORIAN_NET_HOSTED_ZONE_ID} --query 'ResourceRecordSets[?Name==`dm.ethorian.net.`].ResourceRecords[0].Value' --output text)
-      if [ "$CURRENT_IP" != "$ROUTE53_IP" ]; then
-        echo "IP mismatch!"
-        exit 1
-      fi
-    EOT
 
     # Setting the necessary environment variables for the AWS CLI command
     environment = {
