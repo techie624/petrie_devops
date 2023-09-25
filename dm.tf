@@ -9,8 +9,6 @@ resource "aws_instance" "ethorian_net_dm" {
 
   vpc_security_group_ids = [aws_security_group.ethorian_net_home_sg.id]
   
-  }
-  
   user_data = <<-EOF
                 #!/bin/bash
 
