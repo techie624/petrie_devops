@@ -95,7 +95,9 @@ resource "aws_instance" "ethorian_net_dm" {
                 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
                 ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
+                echo "sleeping 10..."
                 sleep 10
+                echo;
 
                 # Clone the repository
                 su rpetrie
