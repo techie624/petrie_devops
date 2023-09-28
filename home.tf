@@ -145,7 +145,6 @@ resource "aws_instance" "ethorian_net_home" {
                 apt-get install -y docker-ce
                 usermod -aG docker rpetrie
 
-
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site
 
