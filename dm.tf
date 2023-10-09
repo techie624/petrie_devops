@@ -12,6 +12,8 @@ resource "aws_instance" "ethorian_net_dm" {
   user_data = <<-EOF
                 #!/bin/bash
 
+                # comment change to trigger deploy 001
+
                 # user_data takes a couple minutes to finish
                 # tail -f /var/log/cloud-init-output.log
 
