@@ -160,9 +160,6 @@ resource "aws_instance" "ethorian_net_home" {
 
                 sleep 1
 
-                # Set up the cron job
-                su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
-
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
 
@@ -173,7 +170,11 @@ resource "aws_instance" "ethorian_net_home" {
                 su - rpetrie -c 'cd /home/rpetrie/workspace/ethoria_dm && bash run.sh'
 
                 # Set up the cron job
-                su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
+                su - rpetrie -c 'crontab -l > /tmp/mycron'
+                su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" >> /tmp/mycron'
+                su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" >> /tmp/mycron'
+                su - rpetrie -c 'crontab /tmp/mycron'
+                rm /tmp/mycron
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
