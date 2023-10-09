@@ -67,6 +67,11 @@ resource "aws_instance" "ethorian_net_home" {
   user_data = <<-EOT
                 #!/bin/bash
 
+                echo;
+                sleep 120
+                echo "Sleeping 120..."
+                echo;
+
                 # comment change to trigger deploy 001
 
                 # user_data takes a couple minutes to finish
@@ -147,6 +152,11 @@ resource "aws_instance" "ethorian_net_home" {
                 mkdir -p /home/rpetrie/workspace
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
+                echo;
+                echo "Sleeping 30..."
+                sleep 30
+                echo;
+
                 # Switch to the 'rpetrie' user and run commands as that user
                 su - rpetrie <<'EOF1'
                   # Disable host key checking for GitHub
@@ -169,6 +179,11 @@ resource "aws_instance" "ethorian_net_home" {
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
+
+                echo;
+                echo "Sleeping 30..."
+                sleep 30
+                echo;
 
                 # Clone the repository
                 su - rpetrie <<'EOF3'
