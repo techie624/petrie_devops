@@ -154,7 +154,11 @@ resource "aws_instance" "ethorian_net_home" {
 
                 su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
                 
-                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && sleep 1 && bash /home/rpetrie/workspace/ethoria_saga/run.sh || true'
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git'
+
+                su - rpetrie -c 'TAG=$(date +"%Y%m%d_%H%M%S") && cd /home/rpetrie/workspace/ethoria_saga && docker build -t ethoria-site:$TAG .'
+
+                su - rpetrie -c 'docker run -dti --name ethoria-site -h ethoria-site -p 80:80 --restart=always ethoria-site:$TAG'
 
                 sleep 1
 
@@ -165,9 +169,12 @@ resource "aws_instance" "ethorian_net_home" {
                 ### Clone repo and run container for site dm
 
                 # Clone the repository
-                su - rpetrie -c 'git clone git@github.com:techie624/ethoria_dm.git /home/rpetrie/workspace 
+                su - rpetrie -c 'git clone git@github.com:techie624/ethoria_dm.git /home/rpetrie/workspace'
                 su - rpetrie -c 'htpasswd -cb /home/rpetrie/workspace/ethoria_dm/.htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}'
-                su - rpetrie -c 'bash /home/rpetrie/workspace/ethoria_dm/run.sh'
+                
+                su - rpetrie -c 'TAG=$(date +"%Y%m%d_%H%M%S") && cd /home/rpetrie/workspace/ethoria_dm && docker build -t ethoria-site-dm:$TAG .'
+
+                su - rpetrie -c 'docker run -dti --name ethoria-site-dm -h ethoria-site-dm -p 80:80 --restart=always ethoria-site-dm:$TAG'
 
                 # Set up the cron job
                 su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
@@ -175,7 +182,7 @@ resource "aws_instance" "ethorian_net_home" {
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
 
-                docker start ethoria-site ethoria-dm-site || true
+                docker start ethoria-site ethoria-site-dm || true
                 docker ps -a
 
                 # echo completion
