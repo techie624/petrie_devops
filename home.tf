@@ -157,8 +157,8 @@ resource "aws_instance" "ethorian_net_home" {
                 su rpetrie
                 
                 echo;
-                echo "Current User: ${whoami}"
-                echo "Current dir: ${pwd}"
+                echo "Current User: $(whoami)"
+                echo "Current dir: $(pwd)"
 
                 echo;
 
@@ -178,8 +178,8 @@ resource "aws_instance" "ethorian_net_home" {
                 cd /home/rpetrie/workspace
 
                 echo;
-                echo "Current User: ${whoami}"
-                echo "Current dir: ${pwd}"
+                echo "Current User: $(whoami)"
+                echo "Current dir: $(pwd)"
 
                 echo;
 
