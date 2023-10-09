@@ -64,7 +64,7 @@ resource "aws_instance" "ethorian_net_home" {
     encrypted   = false  # Set to true if you want to enable EBS encryption
   }
   
-  user_data = <<-EOF
+  user_data = <<-EOT
                 #!/bin/bash
 
                 # comment change to trigger deploy 001
@@ -148,7 +148,7 @@ resource "aws_instance" "ethorian_net_home" {
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
                 # Switch to the 'rpetrie' user and run commands as that user
-                su - rpetrie <<'EOF'
+                su - rpetrie <<'EOF1'
                   # Disable host key checking for GitHub
                   echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
                   ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
@@ -159,19 +159,19 @@ resource "aws_instance" "ethorian_net_home" {
                   cd /home/rpetrie/workspace
                   git clone git@github.com:techie624/ethoria_saga.git
                   bash /home/rpetrie/workspace/ethoria_saga/run.sh
-                EOF
+                EOF1
 
                 # Set up the cron job
                 # Switch to the 'rpetrie' user and run commands as that user
-                su - rpetrie <<'EOF'
+                su - rpetrie <<'EOF2'
                   echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
-                EOF
+                EOF2
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
 
                 # Clone the repository
-                su - rpetrie <<'EOF'
+                su - rpetrie <<'EOF3'
                   # Clone the repository
                   echo "Current User: \$(whoami)"
                   echo "Current dir: \$(pwd)"
@@ -180,12 +180,12 @@ resource "aws_instance" "ethorian_net_home" {
                   cd /home/rpetrie/workspace/ethoria_dm && \
                   htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}
                   bash run.sh
-                EOF
+                EOF3
 
                 # Set up the cron job
-                su - rpetrie <<'EOF'
+                su - rpetrie <<'EOF4'
                   echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
-                EOF
+                EOF4
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
@@ -202,7 +202,7 @@ resource "aws_instance" "ethorian_net_home" {
                 echo "Current date/time: $TAG"
                 echo;
 
-              EOF
+              EOT
 
   tags = {
     Name = "ethorian_net_home"
