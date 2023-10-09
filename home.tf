@@ -75,7 +75,7 @@ resource "aws_instance" "ethorian_net_home" {
                 # comment change to trigger deploy 001
 
                 # user_data takes a couple minutes to finish
-                # tail -f /var/log/cloud-init-output.log
+                # sudo cat /var/log/cloud-init-output.log
 
                 # TAG
                 TAG=$(date +"%Y%m%d_%H%M%S")
@@ -157,13 +157,19 @@ resource "aws_instance" "ethorian_net_home" {
                   su - rpetrie && ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
                   # Clone the repository
+                  su - rpetrie bash -c '
                   echo "Current User: \$(whoami)"
-                  echo "Current dir: \$(pwd)"
-                  su - rpetrie && cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && bash /home/rpetrie/workspace/ethoria_saga/run.sh
+                  echo "Current dir: \$(pwd)"'
+
+                  su - rpetrie -c 'echo "Current User: \$(whoami)" && echo "Current dir: \$(pwd)"'
+                  
+                  su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && sleep 1 && bash /home/rpetrie/workspace/ethoria_saga/run.sh'
+
+                  sleep 1
 
                 # Set up the cron job
                 # Switch to the 'rpetrie' user and run commands as that user
-                  su - rpetrie && echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+                  su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
