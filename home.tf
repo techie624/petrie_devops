@@ -67,13 +67,6 @@ resource "aws_instance" "ethorian_net_home" {
   user_data = <<-EOT
                 #!/bin/bash
 
-                echo;
-                sleep 120
-                echo "Sleeping 120..."
-                echo;
-
-                # comment change to trigger deploy 001
-
                 # user_data takes a couple minutes to finish
                 # sudo cat /var/log/cloud-init-output.log
 
@@ -120,12 +113,13 @@ resource "aws_instance" "ethorian_net_home" {
                 alias vialias='vim ~/.bashrc'
                 alias uucr='sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get autoclean && sudo reboot'
                 
-                # Terminal                                                                                      
+                # Terminal
                 git_branch() {
                   git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
                 }
 
                 export PS1="\[\033[0;36m\]\[\033[0m\033[0;36m\]\u\[\033[0;37m\]@\[\033[0;34m\]\h \[\033[00;37m\][\w] \[\033[0;91m\]\$(git_branch) \[\033[95m\]\d \t \[\033[00m\]\n#~> "
+
                 EOL
 
                 # Ensure ownership is correct
@@ -157,11 +151,8 @@ resource "aws_instance" "ethorian_net_home" {
                   ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
                   # Clone the repository
-                  su - rpetrie bash -c '
-                  echo "Current User: \$(whoami)"
-                  echo "Current dir: \$(pwd)"'
 
-                  su - rpetrie -c 'echo "Current User: \$(whoami)" && echo "Current dir: \$(pwd)"'
+                  su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
                   
                   su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && sleep 1 && bash /home/rpetrie/workspace/ethoria_saga/run.sh'
 
@@ -175,11 +166,12 @@ resource "aws_instance" "ethorian_net_home" {
                 ### Clone repo and run container for site dm
 
                 # Clone the repository
-                  su - rpetrie && echo "Current User: \$(whoami)" && echo "Current dir: \$(pwd)"
-                  su - rpetrie && cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_dm.git && cd /home/rpetrie/workspace/ethoria_dm && htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS} && bash run.sh
+                  su - rpetrie -c 'git clone git@github.com:techie624/ethoria_dm.git /home/rpetrie/workspace 
+                  su - rpetrie -c 'htpasswd -cb /home/rpetrie/workspace/ethoria_dm/.htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}'
+                  su - rpetrie -c 'bash /home/rpetrie/workspace/ethoria_dm/run.sh'
 
                 # Set up the cron job
-                  su - rpetrie && echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+                  su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
