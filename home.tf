@@ -147,50 +147,51 @@ resource "aws_instance" "ethorian_net_home" {
                 mkdir -p /home/rpetrie/workspace
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
-                # disable host key checking
-                su rpetrie && \
-                echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config && \
-                ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
+                # Switch to the 'rpetrie' user and run commands as that user
+                su - rpetrie <<'EOF'
+                  # Disable host key checking for GitHub
+                  echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
+                  ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
-                sleep 5
-
-                # Clone the repository
-                su rpetrie && \
-                echo; && \
-                echo "Current User: $(whoami)" && \
-                echo "Current dir: $(pwd)" && \
-                echo;  && \
-                cd /home/rpetrie/workspace  && \
-                git clone git@github.com:techie624/ethoria_saga.git  && \
-                bash /home/rpetrie/workspace/ethoria_saga/run.sh
+                  # Clone the repository
+                  echo "Current User: \$(whoami)"
+                  echo "Current dir: \$(pwd)"
+                  cd /home/rpetrie/workspace
+                  git clone git@github.com:techie624/ethoria_saga.git
+                  bash /home/rpetrie/workspace/ethoria_saga/run.sh
+                EOF
 
                 # Set up the cron job
-                su rpetrie && \
-                echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+                # Switch to the 'rpetrie' user and run commands as that user
+                su - rpetrie <<'EOF'
+                  echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+                EOF
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
 
                 # Clone the repository
-                su rpetrie && \
-                cd /home/rpetrie/workspace && \
-                echo; && \
-                echo "Current User: $(whoami)" && \
-                echo "Current dir: $(pwd)" && \
-                echo; && \
-                git clone git@github.com:techie624/ethoria_dm.git && \
-                cd /home/rpetrie/workspace/ethoria_dm && \
-                htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS} && \
-                bash run.sh
+                su - rpetrie <<'EOF'
+                  # Clone the repository
+                  echo "Current User: \$(whoami)"
+                  echo "Current dir: \$(pwd)"
+                  cd /home/rpetrie/workspace
+                  git clone git@github.com:techie624/ethoria_dm.git
+                  cd /home/rpetrie/workspace/ethoria_dm && \
+                  htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}
+                  bash run.sh
+                EOF
 
                 # Set up the cron job
-                su rpetrie && \
-                echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+                su - rpetrie <<'EOF'
+                  echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+                EOF
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
 
-                docker start ethoria-site ethoria-dm-site
+                docker start ethoria-site ethoria-dm-site || true
+                docker ps -a
 
                 # echo completion
                 END_TIME=$(date +%s)
