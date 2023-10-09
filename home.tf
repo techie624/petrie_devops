@@ -147,31 +147,30 @@ resource "aws_instance" "ethorian_net_home" {
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
                 # Switch to the 'rpetrie' user and run commands as that user
-                  echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
-                  ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
+                echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
+                ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
-                  # Clone the repository
+                # Clone the repository
 
-                  su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
-                  
-                  su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && sleep 1 && bash /home/rpetrie/workspace/ethoria_saga/run.sh'
+                su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
+                
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && sleep 1 && bash /home/rpetrie/workspace/ethoria_saga/run.sh || true'
 
-                  sleep 1
+                sleep 1
 
                 # Set up the cron job
-                # Switch to the 'rpetrie' user and run commands as that user
-                  su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
+                su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
 
                 # Clone the repository
-                  su - rpetrie -c 'git clone git@github.com:techie624/ethoria_dm.git /home/rpetrie/workspace 
-                  su - rpetrie -c 'htpasswd -cb /home/rpetrie/workspace/ethoria_dm/.htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}'
-                  su - rpetrie -c 'bash /home/rpetrie/workspace/ethoria_dm/run.sh'
+                su - rpetrie -c 'git clone git@github.com:techie624/ethoria_dm.git /home/rpetrie/workspace 
+                su - rpetrie -c 'htpasswd -cb /home/rpetrie/workspace/ethoria_dm/.htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}'
+                su - rpetrie -c 'bash /home/rpetrie/workspace/ethoria_dm/run.sh'
 
                 # Set up the cron job
-                  su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
+                su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
