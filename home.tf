@@ -36,6 +36,13 @@ resource "aws_security_group" "ethorian_net_home_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 8081
+    to_port     = 8081
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name = "ethorian_net_home_sg"
   }
@@ -170,7 +177,24 @@ resource "aws_instance" "ethorian_net_home" {
                 echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+                ### Clone repo and run container for site dm
+
+                # Clone the repository
+                cd /home/rpetrie/workspace
+                git clone git@github.com:techie624/ethoria_dm.git
+
+                # Run the script to start the container
+                cd /home/rpetrie/workspace/ethoria_dm
+                htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}
+                bash run.sh
+
+                # Set up the cron job
+                echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
+
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
+
+                docker start ethoria-site ethoria-dm-site
 
                 # echo completion
                 END_TIME=$(date +%s)
@@ -218,6 +242,18 @@ resource "aws_route53_record" "example" {
 resource "aws_route53_record" "subdomain_record" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
   name    = "home.ethorian.net"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.ethorian_net_home.public_ip]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "example" {
+  zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
+  name    = "dm.ethorian.net"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.ethorian_net_home.public_ip]
