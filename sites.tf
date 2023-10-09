@@ -197,7 +197,7 @@ resource "aws_instance" "ethorian_net_home" {
               EOT
 
   tags = {
-    Name = "ethorian_net_home"
+    Name = "ethorian_net_sites"
   }
 }
 
