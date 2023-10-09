@@ -57,6 +57,12 @@ resource "aws_instance" "ethorian_net_home" {
   key_name = aws_key_pair.my_key.key_name
 
   vpc_security_group_ids = [aws_security_group.ethorian_net_home_sg.id]
+
+  ebs_block_device {
+    device_name = "/dev/sda1"
+    volume_size = 30  # Set the root volume size to 30 GB
+    encrypted   = false  # Set to true if you want to enable EBS encryption
+  }
   
   user_data = <<-EOF
                 #!/bin/bash
@@ -124,7 +130,7 @@ resource "aws_instance" "ethorian_net_home" {
                 apt-get update
 
                 # Install the requested packages
-                apt-get install -y vim tree htop tmux curl git
+                apt-get install -y vim tree htop tmux curl git apache2-utils
 
                 # Install Docker
                 apt-get install -y apt-transport-https ca-certificates curl software-properties-common
@@ -145,10 +151,19 @@ resource "aws_instance" "ethorian_net_home" {
                 echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
                 ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
+                sleep 5
+
                 # Clone the repository
                 su rpetrie
+                
+                echo;
+                echo "Current User: ${whoami}"
+                echo "Current dir: ${pwd}"
+
+                echo;
+
                 cd /home/rpetrie/workspace
-                git clone git@github.com:techie624/ethoria_saga.git 
+                git clone git@github.com:techie624/ethoria_saga.git
 
                 # Run the script to start the container
                 bash /home/rpetrie/workspace/ethoria_saga/run.sh
@@ -161,6 +176,13 @@ resource "aws_instance" "ethorian_net_home" {
 
                 # Clone the repository
                 cd /home/rpetrie/workspace
+
+                echo;
+                echo "Current User: ${whoami}"
+                echo "Current dir: ${pwd}"
+
+                echo;
+
                 git clone git@github.com:techie624/ethoria_dm.git
 
                 # Run the script to start the container
