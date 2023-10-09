@@ -171,7 +171,7 @@ jobs:
       run: |
         end_time=$((SECONDS+600))  # 600 seconds (10 minutes) timeout
         while [[ $SECONDS -lt $end_time ]]; do
-          if curl --head --fail https://ethorian.net; then
+          if curl --head --fail http://ethorian.net; then
             echo "Site is responding"
             exit 0  # Success
           fi
