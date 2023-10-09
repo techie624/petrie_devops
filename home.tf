@@ -152,55 +152,28 @@ resource "aws_instance" "ethorian_net_home" {
                 mkdir -p /home/rpetrie/workspace
                 chown rpetrie:rpetrie /home/rpetrie/workspace
 
-                echo;
-                echo "Sleeping 30..."
-                sleep 30
-                echo;
-
                 # Switch to the 'rpetrie' user and run commands as that user
-                su - rpetrie <<'EOF1'
-                  # Disable host key checking for GitHub
-                  echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
-                  ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
+                  su - rpetrie && echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
+                  su - rpetrie && ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
 
                   # Clone the repository
                   echo "Current User: \$(whoami)"
                   echo "Current dir: \$(pwd)"
-                  cd /home/rpetrie/workspace
-                  git clone git@github.com:techie624/ethoria_saga.git
-                  bash /home/rpetrie/workspace/ethoria_saga/run.sh
-                EOF1
+                  su - rpetrie && cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git && bash /home/rpetrie/workspace/ethoria_saga/run.sh
 
                 # Set up the cron job
                 # Switch to the 'rpetrie' user and run commands as that user
-                su - rpetrie <<'EOF2'
-                  echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
-                EOF2
+                  su - rpetrie && echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_saga/git_pull.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
 
-                echo;
-                echo "Sleeping 30..."
-                sleep 30
-                echo;
-
                 # Clone the repository
-                su - rpetrie <<'EOF3'
-                  # Clone the repository
-                  echo "Current User: \$(whoami)"
-                  echo "Current dir: \$(pwd)"
-                  cd /home/rpetrie/workspace
-                  git clone git@github.com:techie624/ethoria_dm.git
-                  cd /home/rpetrie/workspace/ethoria_dm && \
-                  htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}
-                  bash run.sh
-                EOF3
+                  su - rpetrie && echo "Current User: \$(whoami)" && echo "Current dir: \$(pwd)"
+                  su - rpetrie && cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_dm.git && cd /home/rpetrie/workspace/ethoria_dm && htpasswd -cb .htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS} && bash run.sh
 
                 # Set up the cron job
-                su - rpetrie <<'EOF4'
-                  echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
-                EOF4
+                  su - rpetrie && echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
