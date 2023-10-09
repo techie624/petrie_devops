@@ -174,7 +174,7 @@ resource "aws_instance" "ethorian_net_home" {
                 
                 su - rpetrie -c 'TAG=$(date +"%Y%m%d_%H%M%S") && cd /home/rpetrie/workspace/ethoria_dm && docker build -t ethoria-site-dm:$TAG .'
 
-                su - rpetrie -c 'docker run -dti --name ethoria-site-dm -h ethoria-site-dm -p 80:80 --restart=always ethoria-site-dm:$TAG'
+                su - rpetrie -c 'docker run -dti --name ethoria-site-dm -h ethoria-site-dm -p 8081:80 --restart=always ethoria-site-dm:$TAG'
 
                 # Set up the cron job
                 su - rpetrie -c 'echo "0 * * * * /bin/bash /home/rpetrie/workspace/ethoria_dm/git_pull_deploy.sh >> /home/rpetrie/pull.log 2>&1" | crontab -'
