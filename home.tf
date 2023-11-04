@@ -199,7 +199,7 @@ resource "aws_instance" "ethorian_net_home" {
 }
 
 resource "aws_key_pair" "my_key" {
-  key_name   = "my_key_pair"
+  key_name   = "ethorian_home_keypair"
   public_key = var.SSH_PUBLIC_KEY
 }
 
