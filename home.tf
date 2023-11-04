@@ -198,10 +198,6 @@ resource "aws_instance" "ethorian_net_home" {
   }
 }
 
-data "aws_key_pair" "existing" {
-  key_name = "ethorian_home_keypair"
-}
-
 resource "aws_key_pair" "my_key" {
   key_name   = "ethorian_home_keypair"
   public_key = var.SSH_PUBLIC_KEY
