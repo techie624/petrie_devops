@@ -76,6 +76,10 @@ jobs:
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
 
+    - name: Import Existing Key Pair into Terraform State
+      run: terraform import aws_key_pair.my_key ethorian_home_keypair
+      continue-on-error: true # This makes sure the workflow doesn't fail if the import isn't necessary
+
     - name: Terraform Initialize
       run: terraform init
 
