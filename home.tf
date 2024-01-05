@@ -112,6 +112,7 @@ resource "aws_instance" "ethorian_net_home" {
                 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
                 alias vialias='vim ~/.bashrc'
                 alias uucr='sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get autoclean && sudo reboot'
+                alias pull='cd /home/rpetrie/workspace/ethoria_saga && git stash && git pull'
                 
                 # Terminal
                 git_branch() {
@@ -136,7 +137,7 @@ resource "aws_instance" "ethorian_net_home" {
                 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
                 add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
                 apt-get update
-                apt-get install -y docker-ce
+                apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
                 usermod -aG docker rpetrie
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
