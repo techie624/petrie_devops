@@ -2,11 +2,11 @@ name: Deploy ethorian.net (EC2)
 
 on:
   workflow_dispatch:
-    inputs:
-      apply:
-        description: 'Apply the Terraform plan?'
-        required: true
-        default: 'true'
+    # inputs:
+    #   apply:
+    #     description: 'Apply the Terraform plan?'
+    #     required: true
+    #     default: 'true'
   repository_dispatch:
     types: [trigger-deployment]
 
@@ -60,7 +60,7 @@ jobs:
 
   taint:
     needs: plan
-    if: github.event.inputs.apply == 'true'
+    # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
 
@@ -86,7 +86,7 @@ jobs:
 
   deploy:
     needs: taint
-    if: github.event.inputs.apply == 'true'
+    # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
 
@@ -136,7 +136,7 @@ jobs:
 
   dns:
     needs: deploy
-    if: github.event.inputs.apply == 'true'
+    # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
 
@@ -186,7 +186,7 @@ jobs:
 
   check_site:
     needs: dns
-    if: github.event.inputs.apply == 'true'
+    # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
     timeout-minutes: 10  # Set the maximum runtime for this job
