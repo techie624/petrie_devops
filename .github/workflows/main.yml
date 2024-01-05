@@ -7,6 +7,8 @@ on:
         description: 'Apply the Terraform plan?'
         required: true
         default: 'true'
+  repository_dispatch:
+    types: [trigger-deployment]
 
 env:
   #TF_LOG: TRACE
