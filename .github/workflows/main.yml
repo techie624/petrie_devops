@@ -208,3 +208,41 @@ jobs:
         done
         echo "Site did not respond within the timeout"
         exit 1  # Timeout
+
+  notify:
+    needs: [plan, taint, deploy, dns, check_site]
+    runs-on: ubuntu-latest
+    if: always()  # This ensures notification runs regardless of previous job success/failure
+    steps:
+      - name: Setup SSH for EC2 Access
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ethorian.net >> ~/.ssh/known_hosts
+  
+      - name: Notify Webhook on Success
+        if: ${{ needs.check_site.result == 'success' }}
+        run: |
+          instance_ip=$(terraform output -raw instance_public_ip)
+          payload=$(jq -n \
+                      --arg status "SUCCESS" \
+                      --arg ip "$instance_ip" \
+                      '{status: $status, ip: $ip}')
+          curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
+    
+      - name: Notify Webhook on Failure and Send Logs to Discord
+        if: ${{ needs.check_site.result == 'failure' }}
+        run: |
+          instance_ip=$(terraform output -raw instance_public_ip)
+          log_contents=$(ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'cat /var/log/cloud-init-output.log')
+          # Send failure notification to your webhook
+          payload=$(jq -n \
+                      --arg status "FAILURE" \
+                      --arg ip "$instance_ip" \
+                      --arg logs "$log_contents" \
+                      '{status: $status, ip: $ip, logs: $logs}')
+          curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
+          # Send logs to Discord
+          curl -X POST -H "Content-Type: multipart/form-data" -F "content=Deployment Failed. See attached logs." -F "file=@<(echo \"$log_contents\")" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
+          
