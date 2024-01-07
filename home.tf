@@ -180,7 +180,7 @@ resource "aws_instance" "ethorian_net_home" {
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
 
-                docker start ethoria-site ethoria-site-dm || true
+                #docker start ethoria-site ethoria-site-dm || true
                 docker ps -a
 
                 # echo completion

@@ -63,7 +63,7 @@ jobs:
         path: ./artifact-dir
 
   taint:
-    needs: plan
+    needs: [plan]
     # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
@@ -89,7 +89,7 @@ jobs:
       run: terraform taint aws_instance.ethorian_net_home
 
   deploy:
-    needs: taint
+    needs: [plan, taint]
     # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
@@ -139,7 +139,7 @@ jobs:
         echo "instance_public_ip=$(terraform output instance_public_ip)"
 
   dns:
-    needs: deploy
+    needs: [plan, taint, deploy]
     # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
@@ -189,7 +189,7 @@ jobs:
         echo "instance_public_ip=$(terraform output instance_public_ip)"
 
   check_site:
-    needs: dns
+    needs: [plan, taint, deploy, dns]
     # if: github.event.inputs.apply == 'true'
     
     runs-on: ubuntu-latest
