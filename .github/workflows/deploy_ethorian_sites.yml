@@ -188,30 +188,70 @@ jobs:
         terraform apply -auto-approve
         echo "instance_public_ip=$(terraform output instance_public_ip)"
 
-  check_site:
-    needs: [plan, taint, deploy, dns]
-    # if: github.event.inputs.apply == 'true'
-    
+  check_log_entry:
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Set the maximum runtime for this job
-
+    needs: [plan, taint, deploy, dns]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Wait for Log Entry
+        run: |
+          # Set up SSH
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ethorian.net >> ~/.ssh/known_hosts
 
-    - name: Wait for Site to Be Ready
-      run: |
-        end_time=$((SECONDS+600))  # 600 seconds (10 minutes) timeout
-        while [[ $SECONDS -lt $end_time ]]; do
-          if curl --head --fail http://ethorian.net; then
-            echo "Site is responding"
-            exit 0  # Success
+          # Wait for specific log entry with a 10-minute timeout
+          log_found=false
+          end_time=$((SECONDS+600))  # 600 seconds (10 minutes) timeout for log check
+          while [[ $SECONDS -lt $end_time ]]; do
+            if ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'sudo grep "user_data has completed!" /var/log/cloud-init-output.log'; then
+              echo "Log entry found, proceeding"
+              log_found=true
+              break
+            else
+              echo "Waiting for log entry..."
+              sleep 30  # Wait for 30 seconds before retrying
+            fi
+          done
+
+          if [ "$log_found" = false ]; then
+            echo "Required log entry not found within the timeout"
+            exit 1  # Exit if log entry not found within the timeout
           fi
-          echo "Site is not responding, waiting..."
-          sleep 10  # Wait for 10 seconds before retrying
-        done
-        echo "Site did not respond within the timeout"
-        exit 1  # Timeout
+      
+  check_site:
+    needs: [plan, taint, deploy, dns, check_log_entry]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if Site is Ready
+        run: |
+          # Wait for site to be ready with a 10-minute timeout
+          end_time=$((SECONDS+600))  # 600 seconds (10 minutes) timeout for site check
+          while [[ $SECONDS -lt $end_time ]]; do
+            if curl --head --fail http://ethorian.net; then
+              echo "Site is responding"
+              exit 0  # Success
+            fi
+            echo "Site is not responding, waiting..."
+            sleep 10  # Wait for 10 seconds before retrying
+          done
+          echo "Site did not respond within the timeout"
+          exit 1  # Timeout
+        
+      - name: Check if Auth Site is Ready
+        run: |
+          # Wait for auth site to be ready with a 10-minute timeout
+          end_time=$((SECONDS+600))  # 600 seconds (10 minutes) timeout for auth site check
+          while [[ $SECONDS -lt $end_time ]]; do
+            if curl --head --fail http://ethorian.net:8081; then
+              echo "Auth site is responding and asking for authentication"
+              exit 0  # Success
+            fi
+            echo "Auth site is not responding, waiting..."
+            sleep 10  # Wait for 10 seconds before retrying
+          done
+          echo "Auth site did not respond within the timeout"
+          exit 1  # Timeout
 
   notify:
     needs: [plan, taint, deploy, dns, check_site]
@@ -228,7 +268,7 @@ jobs:
       - name: Notify Webhook on Success
         if: ${{ needs.check_site.result == 'success' }}
         run: |
-          instance_ip=$(terraform output -raw instance_public_ip)
+          instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
           payload=$(jq -n \
                       --arg status "SUCCESS" \
                       --arg ip "$instance_ip" \
@@ -238,7 +278,7 @@ jobs:
       - name: Notify Webhook on Failure and Send Logs to Discord
         if: ${{ needs.check_site.result == 'failure' }}
         run: |
-          instance_ip=$(terraform output -raw instance_public_ip)
+          instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
           # Send failure notification to your webhook
           payload=$(jq -n \
                       --arg status "FAILURE" \
@@ -247,7 +287,7 @@ jobs:
           curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
           # Send logs to Discord
           TAG=$(TZ="America/New_York" date +"%Y%m%d_%H%M%S")
-          log_contents=$(ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'cat /var/log/cloud-init-output.log')
+          log_contents=$(ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'sudo cat /var/log/cloud-init-output.log')
           echo $log_contents > userdata_$TAG.log
           FILE1="file1=@userdata_$TAG.log"
           curl -F 'payload_json={"content": '/var/log/cloud-init-output.log'}' -F $FILE1 ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
