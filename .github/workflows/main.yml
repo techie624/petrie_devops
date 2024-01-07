@@ -239,14 +239,16 @@ jobs:
         if: ${{ needs.check_site.result == 'failure' }}
         run: |
           instance_ip=$(terraform output -raw instance_public_ip)
-          log_contents=$(ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'cat /var/log/cloud-init-output.log')
           # Send failure notification to your webhook
           payload=$(jq -n \
                       --arg status "FAILURE" \
                       --arg ip "$instance_ip" \
-                      --arg logs "$log_contents" \
-                      '{status: $status, ip: $ip, logs: $logs}')
+                      '{status: $status, ip: $ip}')
           curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
           # Send logs to Discord
-          curl -X POST -H "Content-Type: multipart/form-data" -F "content=Deployment Failed. See attached logs." -F "file=@<(echo \"$log_contents\")" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
+          TAG=$(TZ="America/New_York" date +"%Y%m%d_%H%M%S")
+          log_contents=$(ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'cat /var/log/cloud-init-output.log')
+          echo $log_contents > userdata_$TAG.log
+          FILE1="file1=@userdata_$TAG.log"
+          curl -F 'payload_json={"content": '/var/log/cloud-init-output.log'}' -F $FILE1 ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
           
