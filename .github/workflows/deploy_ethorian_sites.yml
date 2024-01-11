@@ -29,17 +29,17 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Initialize
       run: terraform init
@@ -56,12 +56,6 @@ jobs:
         TF_VAR_HTPASSWD_PASS: ${{ secrets.HTPASSWD_PASS }}
       run: terraform plan -out=tfplan
 
-    - name: Upload plan
-      uses: actions/upload-artifact@v2
-      with:
-        name: tfplan
-        path: ./artifact-dir
-
   taint:
     needs: [plan]
     # if: github.event.inputs.apply == 'true'
@@ -70,17 +64,17 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Initialize
       run: terraform init
@@ -96,17 +90,17 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Initialize
       run: terraform init
@@ -146,17 +140,17 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set up AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: us-east-1
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
+      uses: hashicorp/setup-terraform@v3
 
     - name: Terraform Initialize
       run: terraform init
@@ -258,19 +252,27 @@ jobs:
           fi
 
   notify:
-    needs: [plan, taint, deploy, dns, check_sites]
+    needs: [plan, taint, deploy, dns, check_log_entry, check_sites]
     runs-on: ubuntu-latest
-    if: always()  # This ensures notification runs regardless of previous job success/failure
     steps:
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Initialize
+        run: terraform init
       
       - name: Notify Webhook on Success
         if: ${{ needs.check_sites.result == 'success' }}
         run: |
+          echo;
           instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
           payload=$(jq -n \
                       --arg status "SUCCESS" \
                       --arg ip "$instance_ip" \
                       '{status: $status, ip: $ip}')
+          echo $payload
+          echo;
           curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
     
       
