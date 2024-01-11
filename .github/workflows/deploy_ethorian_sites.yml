@@ -1,4 +1,4 @@
-name: Deploy ethorian.net (EC2) 
+name: Deploy Ethorian Site (EC2) 
 
 on:
   workflow_dispatch:
@@ -224,7 +224,7 @@ jobs:
             echo "Failure: Log entry not found within 10 minutes."
           fi
       
-  check_site:
+  check_sites:
     needs: [plan, taint, deploy, dns, check_log_entry]
     runs-on: ubuntu-latest
     steps:
@@ -245,33 +245,26 @@ jobs:
         
       - name: Check if Auth Site is Ready
         run: |
-          # Wait for auth site to be ready with a 10-minute timeout
-          end_time=$((SECONDS+600))  # 600 seconds (10 minutes) timeout for auth site check
-          while [[ $SECONDS -lt $end_time ]]; do
-            if curl --head --fail http://ethorian.net:8081; then
-              echo "Auth site is responding and asking for authentication"
-              exit 0  # Success
-            fi
-            echo "Auth site is not responding, waiting..."
-            sleep 10  # Wait for 10 seconds before retrying
-          done
-          echo "Auth site did not respond within the timeout"
-          exit 1  # Timeout
+          # Use curl to make a request without authentication
+          response=$(curl -s -I -u username:password http://ethorian.net:8081)
+
+          # Check if the response contains "HTTP/1.1 401 Unauthorized"
+          if [[ $response == *"HTTP/1.1 401 Unauthorized"* ]]; then
+            echo "Authentication required. Site is protected."
+            exit 0  # Exit with success
+          else
+            echo "Authentication not required. Site is not protected or accessible."
+            exit 1  # Exit with failure
+          fi
 
   notify:
-    needs: [plan, taint, deploy, dns, check_site]
+    needs: [plan, taint, deploy, dns, check_sites]
     runs-on: ubuntu-latest
     if: always()  # This ensures notification runs regardless of previous job success/failure
     steps:
-      - name: Setup SSH for EC2 Access
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ethorian.net >> ~/.ssh/known_hosts
-  
+      
       - name: Notify Webhook on Success
-        if: ${{ needs.check_site.result == 'success' }}
+        if: ${{ needs.check_sites.result == 'success' }}
         run: |
           instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
           payload=$(jq -n \
@@ -280,20 +273,4 @@ jobs:
                       '{status: $status, ip: $ip}')
           curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
     
-      - name: Notify Webhook on Failure and Send Logs to Discord
-        if: ${{ needs.check_site.result == 'failure' }}
-        run: |
-          instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
-          # Send failure notification to your webhook
-          payload=$(jq -n \
-                      --arg status "FAILURE" \
-                      --arg ip "$instance_ip" \
-                      '{status: $status, ip: $ip}')
-          curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
-          # Send logs to Discord
-          TAG=$(TZ="America/New_York" date +"%Y%m%d_%H%M%S")
-          log_contents=$(ssh -o "StrictHostKeyChecking=no" rpetrie@ethorian.net 'sudo cat /var/log/cloud-init-output.log')
-          echo $log_contents > userdata_$TAG.log
-          FILE1="file1=@userdata_$TAG.log"
-          curl -F 'payload_json={"content": '/var/log/cloud-init-output.log'}' -F $FILE1 ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
-          
+      
