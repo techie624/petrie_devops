@@ -251,28 +251,26 @@ jobs:
             exit 1  # Exit with failure
           fi
 
-  notify:
-    needs: [plan, taint, deploy, dns, check_log_entry, check_sites]
-    runs-on: ubuntu-latest
-    steps:
+  # notify:
+  #   needs: [plan, taint, deploy, dns, check_log_entry, check_sites]
+  #   runs-on: ubuntu-latest
+  #   steps:
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@v3
 
-      - name: Terraform Initialize
-        run: terraform init
+  #     - name: Terraform Initialize
+  #       run: terraform init
       
-      - name: Notify Webhook on Success
-        if: ${{ needs.check_sites.result == 'success' }}
-        run: |
-          echo;
-          instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
-          payload=$(jq -n \
-                      --arg status "SUCCESS" \
-                      --arg ip "$instance_ip" \
-                      '{status: $status, ip: $ip}')
-          echo $payload
-          echo;
-          curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
-    
-      
+  #     - name: Notify Webhook on Success
+  #       if: ${{ needs.check_sites.result == 'success' }}
+  #       run: |
+  #         echo;
+  #         instance_ip=$(terraform output -raw instance_public_ip) && echo $instance_ip
+  #         payload=$(jq -n \
+  #                     --arg status "SUCCESS" \
+  #                     --arg ip "$instance_ip" \
+  #                     '{status: $status, ip: $ip}')
+  #         echo $payload
+  #         echo;
+  #         curl -X POST -H "Content-Type: application/json" -d "$payload" ${{ secrets.ETHORIA_DM_SITE_WEBHOOK_URL }}
