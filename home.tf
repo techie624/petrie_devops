@@ -43,6 +43,13 @@ resource "aws_security_group" "ethorian_net_home_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 8082
+    to_port     = 8082
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name = "ethorian_net_home_sg"
   }
@@ -202,8 +209,6 @@ terraform {
     bucket = "rpetrie-tfstate"
     key    = "statefile.tfstate"
     region = "us-east-1"
-    # If using DynamoDB for state locking (recommended):
-    # dynamodb_table = "your-dynamodb-table-name"
   }
 }
 
@@ -219,9 +224,9 @@ resource "aws_route53_record" "example" {
   }
 }
 
-resource "aws_route53_record" "subdomain_record" {
+resource "aws_route53_record" "subdomain_record_brindlings" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
-  name    = "home.ethorian.net"
+  name    = "brindlings.ethorian.net"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.ethorian_net_home.public_ip]
@@ -234,6 +239,18 @@ resource "aws_route53_record" "subdomain_record" {
 resource "aws_route53_record" "subdomain_record_dm" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
   name    = "dm.ethorian.net"
+  type    = "A"
+  ttl     = "300"
+  records = [aws_instance.ethorian_net_home.public_ip]
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "subdomain_record_emberhearts" {
+  zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
+  name    = "ember-hearts.ethorian.net"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.ethorian_net_home.public_ip]
