@@ -219,7 +219,7 @@ terraform {
   }
 }
 
-resource "aws_route53_record" "home" {
+resource "aws_route53_record" "example" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
   name    = "ethorian.net"
   type    = "A"
