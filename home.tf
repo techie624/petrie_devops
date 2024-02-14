@@ -169,9 +169,9 @@ resource "aws_instance" "ethorian_net_home" {
 
                 su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
                 
-                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethorian_saga.git'
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git'
 
-                su - rpetrie -c 'cd /home/rpetrie/workspace/ethorian_brindlings && bash run.sh'
+                su - rpetrie -c 'cd /home/rpetrie/workspace/ethoria_saga && bash run.sh'
 
                 sleep 1
 
