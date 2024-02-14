@@ -50,6 +50,13 @@ resource "aws_security_group" "ethorian_net_home_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 8083
+    to_port     = 8083
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   tags = {
     Name = "ethorian_net_home_sg"
   }
@@ -119,7 +126,7 @@ resource "aws_instance" "ethorian_net_home" {
                 alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
                 alias vialias='vim ~/.bashrc'
                 alias uucr='sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get autoclean && sudo reboot'
-                alias pull='cd /home/rpetrie/workspace/ethoria_saga && git stash && git pull'
+                alias pull='cd /home/rpetrie/workspace/ethorian_brindlings && git stash && git pull'
                 
                 # Terminal
                 git_branch() {
@@ -162,9 +169,9 @@ resource "aws_instance" "ethorian_net_home" {
 
                 su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
                 
-                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git'
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethorian_brindlings.git'
 
-                su - rpetrie -c 'cd /home/rpetrie/workspace/ethoria_saga && bash run.sh'
+                su - rpetrie -c 'cd /home/rpetrie/workspace/ethorian_brindlings && bash run.sh'
 
                 sleep 1
 
@@ -212,7 +219,7 @@ terraform {
   }
 }
 
-resource "aws_route53_record" "example" {
+resource "aws_route53_record" "home" {
   zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
   name    = "ethorian.net"
   type    = "A"
@@ -258,4 +265,12 @@ resource "aws_route53_record" "subdomain_record_emberhearts" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+resource "aws_route53_record" "domain_verification" {
+  zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
+  name    = "ethorian.net"
+  type    = "TXT"
+  ttl     = "300"
+  records = ["openai-domain-verification=dv-pn8eJsvAGZuJcMfnZg0L50W7"]
 }

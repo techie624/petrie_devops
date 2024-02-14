@@ -1,4 +1,4 @@
-name: Deploy Ethorian Site (EC2) 
+name: Deploy Brindlings Site (EC2) 
 
 on:
   workflow_dispatch:
