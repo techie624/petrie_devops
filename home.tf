@@ -267,10 +267,3 @@ resource "aws_route53_record" "subdomain_record_emberhearts" {
   }
 }
 
-resource "aws_route53_record" "domain_verification" {
-  zone_id = var.ETHORIAN_NET_HOSTED_ZONE_ID
-  name    = "ethorian.net"
-  type    = "TXT"
-  ttl     = "300"
-  records = ["openai-domain-verification=dv-pn8eJsvAGZuJcMfnZg0L50W7"]
-}
