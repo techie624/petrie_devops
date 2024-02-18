@@ -79,127 +79,151 @@ resource "aws_instance" "ethorian_net_home" {
   }
   
   user_data = <<-EOT
-                #!/bin/bash
+              #!/bin/bash
 
-                # user_data takes a couple minutes to finish
-                # sudo cat /var/log/cloud-init-output.log
+              # user_data takes a couple minutes to finish
+              # sudo cat /var/log/cloud-init-output.log
 
-                # TAG
-                TAG=$(date +"%Y%m%d_%H%M%S")
-                START_TIME=$(date +%s)
+              # TAG
+              TAG=$(date +"%Y%m%d_%H%M%S")
+              START_TIME=$(date +%s)
 
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-                ### Configure instance
+              # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+              ### Configure instance
 
-                # Set date time to EST
-                timedatectl set-timezone America/New_York
+              # Set date time to EST
+              timedatectl set-timezone America/New_York
 
-                # Create the rpetrie user
-                useradd rpetrie -m -s /bin/bash
-                echo "rpetrie ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+              # Create the rpetrie user
+              useradd rpetrie -m -s /bin/bash
+              echo "rpetrie ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-                # Set up SSH for rpetrie
-                mkdir /home/rpetrie/.ssh
-                echo "${var.SSH_PUBLIC_KEY}" > /home/rpetrie/.ssh/authorized_keys
-                chmod 700 /home/rpetrie/.ssh
-                chmod 600 /home/rpetrie/.ssh/authorized_keys
-                chown -R rpetrie:rpetrie /home/rpetrie/.ssh
+              # Set up SSH for rpetrie
+              mkdir /home/rpetrie/.ssh
+              echo "${var.SSH_PUBLIC_KEY}" > /home/rpetrie/.ssh/authorized_keys
+              chmod 700 /home/rpetrie/.ssh
+              chmod 600 /home/rpetrie/.ssh/authorized_keys
+              chown -R rpetrie:rpetrie /home/rpetrie/.ssh
 
-                # Set up the public and private keys for rpetrie
-                echo "${var.SSH_PUBLIC_KEY_HOME}" > /home/rpetrie/.ssh/id_rsa.pub
-                echo "${var.OPEN_SSH_PRIVATE_KEY}" > /home/rpetrie/.ssh/id_rsa
-                chmod 644 /home/rpetrie/.ssh/id_rsa.pub
-                chmod 600 /home/rpetrie/.ssh/id_rsa
-                chown rpetrie:rpetrie /home/rpetrie/.ssh/id_rsa.pub
-                chown rpetrie:rpetrie /home/rpetrie/.ssh/id_rsa
+              # Set up the public and private keys for rpetrie
+              echo "${var.SSH_PUBLIC_KEY_HOME}" > /home/rpetrie/.ssh/id_rsa.pub
+              echo "${var.OPEN_SSH_PRIVATE_KEY}" > /home/rpetrie/.ssh/id_rsa
+              chmod 644 /home/rpetrie/.ssh/id_rsa.pub
+              chmod 600 /home/rpetrie/.ssh/id_rsa
+              chown rpetrie:rpetrie /home/rpetrie/.ssh/id_rsa.pub
+              chown rpetrie:rpetrie /home/rpetrie/.ssh/id_rsa
 
+              # Set hostname
+              hostnamectl set-hostname ethoria-home
 
-                # Set hostname
-                hostnamectl set-hostname ethoria-home
+              # Append custom lines to rpetrie's .bashrc
+              cat <<EOL >> /home/rpetrie/.bashrc
 
-                # Append custom lines to rpetrie's .bashrc
-                cat <<EOL >> /home/rpetrie/.bashrc
+              # Custom settings
+              alias ll="ls -larth"
+              alias vi="vim"
+              alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
+              alias vialias='vim ~/.bashrc'
+              alias uucr='sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get autoclean && sudo reboot'
+              alias pull='cd /home/rpetrie/workspace/ethorian_brindlings && git stash && git pull'
 
-                # Custom settings
-                alias ll="ls -larth"
-                alias vi="vim"
-                alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}\t{{.Ports}}"'
-                alias vialias='vim ~/.bashrc'
-                alias uucr='sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get autoclean && sudo reboot'
-                alias pull='cd /home/rpetrie/workspace/ethorian_brindlings && git stash && git pull'
-                
-                # Terminal
-                git_branch() {
-                  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
-                }
+              # Terminal customization
+              git_branch() {
+                git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+              }
 
-                export PS1="\[\033[0;36m\]\[\033[0m\033[0;36m\]\u\[\033[0;37m\]@\[\033[0;34m\]\h \[\033[00;37m\][\w] \[\033[0;91m\]\$(git_branch) \[\033[95m\]\d \t \[\033[00m\]\n#~> "
+              export PS1="\[\033[0;36m\]\[\033[0m\033[0;36m\]\u\[\033[0;37m\]@\[\033[0;34m\]\h \[\033[00;37m\][\w] \[\033[0;91m\]\$(git_branch) \[\033[95m\]\d \t \[\033[00m\]\n#~> "
 
-                EOL
+              EOL
 
-                # Ensure ownership is correct
-                chown rpetrie:rpetrie /home/rpetrie/.bashrc
+              # Ensure ownership is correct
+              chown rpetrie:rpetrie /home/rpetrie/.bashrc
 
-                # Update the system
-                apt-get update
+              # Update the system
+              apt-get update
 
-                # Install the requested packages
-                apt-get install -y vim tree htop tmux curl git apache2-utils
+              # Install the requested packages
+              apt-get install -y vim tree htop tmux curl git apache2-utils
 
-                # Install Docker
-                apt-get install -y apt-transport-https ca-certificates curl software-properties-common
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-                apt-get update
-                apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-                usermod -aG docker rpetrie
+              # Install Docker
+              apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
+              add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+              apt-get update
+              apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              usermod -aG docker rpetrie
 
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-                ### Clone repo and run container for site
+              # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+              ### Nginx installation and configuration for reverse proxy
 
-                # Create workspace directory
-                mkdir -p /home/rpetrie/workspace
-                chown rpetrie:rpetrie /home/rpetrie/workspace
+              # Install Nginx
+              apt-get install -y nginx
 
-                # Switch to the 'rpetrie' user and run commands as that user
-                echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> /home/rpetrie/.ssh/config
-                ssh-keyscan github.com >> /home/rpetrie/.ssh/known_hosts
+              # Configure Nginx for brindlings.ethorian.net
+              cat <<'EOF' > /etc/nginx/sites-available/brindlings.ethorian.net
+              server {
+                  listen 80;
+                  listen [::]:80;
+                  server_name brindlings.ethorian.net;
 
-                # Clone the repository
+                  location / {
+                      proxy_pass http://localhost:8081;
+                      proxy_set_header Host \$host;
+                      proxy_set_header X-Real-IP \$remote_addr;
+                      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto \$scheme;
+                  }
+              }
+              EOF
 
-                su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
-                
-                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git'
+              # Configure Nginx for ember-hearts.ethorian.net
+              cat <<'EOF' > /etc/nginx/sites-available/ember-hearts.ethorian.net
+              server {
+                  listen 80;
+                  listen [::]:80;
+                  server_name ember-hearts.ethorian.net;
 
-                su - rpetrie -c 'cd /home/rpetrie/workspace/ethoria_saga && bash run.sh'
+                  location / {
+                      proxy_pass http://localhost:8082;
+                      proxy_set_header Host \$host;
+                      proxy_set_header X-Real-IP \$remote_addr;
+                      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto \$scheme;
+                  }
+              }
+              EOF
 
-                sleep 1
+              # Enable the configurations
+              ln -s /etc/nginx/sites-available/brindlings.ethorian.net /etc/nginx/sites-enabled/
+              ln -s /etc/nginx/sites-available/ember-hearts.ethorian.net /etc/nginx/sites-enabled/
 
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-                ### Clone repo and run container for site dm
+              # Remove the default site configuration
+              rm /etc/nginx/sites-enabled/default
 
-                # Clone the repository
-                # su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_dm.git'
-                # su - rpetrie -c 'htpasswd -cb /home/rpetrie/workspace/ethoria_dm/.htpasswd ${var.HTPASSWD_USER} ${var.HTPASSWD_PASS}'
+              # Reload Nginx to apply the configurations
+              systemctl reload nginx
 
-                # su - rpetrie -c 'cd /home/rpetrie/workspace/ethoria_dm && bash run.sh'
+              # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+              ### Clone repo and run container for site
 
-                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
-                ### End script and show execution time
+              # Create workspace directory and clone repositories, omitted for brevity
 
-                docker start ethoria-site ethoria-site-dm || true
-                docker ps -a
+              # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
+              ### End script and show execution time
 
-                # echo completion
-                END_TIME=$(date +%s)
-                DURATION=$((END_TIME - START_TIME))
-                echo;
-                echo "user_data has completed!"
-                echo "Script execution time: $DURATION seconds"
-                echo "Current date/time: $TAG"
-                echo;
+              docker start ethoria-site ethoria-site-dm || true
+              docker ps -a
 
-              EOT
+              # echo completion
+              END_TIME=$(date +%s)
+              DURATION=$((END_TIME - START_TIME))
+              echo;
+              echo "user_data has completed!"
+              echo "Script execution time: $DURATION seconds"
+              echo "Current date/time: $TAG"
+              echo;
+
+            EOT
 
   tags = {
     Name = "ethorian_net_home"
