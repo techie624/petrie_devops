@@ -219,11 +219,14 @@ resource "aws_instance" "ethorian_net_home" {
 
                 su - rpetrie -c "echo 'Current User: '\$(whoami) && echo 'Current dir: '\$(pwd)"
                 
-                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethoria_saga.git'
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethorian_brindlings.git'
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethorian_home.git'
 
-                su - rpetrie -c 'cd /home/rpetrie/workspace/ethoria_saga && bash run.sh'
+                su - rpetrie -c 'cd /home/rpetrie/workspace/ethorian_brindlings && bash run.sh'
 
                 sleep 1
+
+                su - rpetrie -c 'cd /home/rpetrie/workspace/ethorian_home && bash run.sh'
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
@@ -237,7 +240,7 @@ resource "aws_instance" "ethorian_net_home" {
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
 
-                docker start ethoria-site ethoria-site-dm || true
+                docker start ethorian-home ethorian-brindlings || true
                 docker ps -a
 
                 # echo completion
