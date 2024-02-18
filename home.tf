@@ -212,6 +212,7 @@ resource "aws_instance" "ethorian_net_home" {
                 EOF
 
                 # Enable the configurations
+                ln -s /etc/nginx/sites-available/ethorian.net /etc/nginx/sites-enabled/
                 ln -s /etc/nginx/sites-available/brindlings.ethorian.net /etc/nginx/sites-enabled/
                 ln -s /etc/nginx/sites-available/ember-hearts.ethorian.net /etc/nginx/sites-enabled/
 
