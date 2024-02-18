@@ -160,6 +160,23 @@ resource "aws_instance" "ethorian_net_home" {
                 # Install Nginx
                 apt-get install -y nginx
 
+                # Configure Nginx for ethorian.net
+                cat <<'EOF' > /etc/nginx/sites-available/ethorian.net
+                server {
+                    listen 80;
+                    listen [::]:80;
+                    server_name ethorian.net;
+
+                    location / {
+                        proxy_pass http://localhost:8080;
+                        proxy_set_header Host \$host;
+                        proxy_set_header X-Real-IP \$remote_addr;
+                        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto \$scheme;
+                    }
+                }
+                EOF
+                
                 # Configure Nginx for brindlings.ethorian.net
                 cat <<'EOF' > /etc/nginx/sites-available/brindlings.ethorian.net
                 server {
