@@ -239,12 +239,17 @@ resource "aws_instance" "ethorian_net_home" {
                 
                 su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethorian_brindlings.git'
                 su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ethorian_home.git'
+                su - rpetrie -c 'cd /home/rpetrie/workspace && git clone git@github.com:techie624/ember_hearts.git'
 
                 su - rpetrie -c 'cd /home/rpetrie/workspace/ethorian_brindlings && bash run.sh'
 
                 sleep 1
 
                 su - rpetrie -c 'cd /home/rpetrie/workspace/ethorian_home && bash run.sh'
+
+                sleep 1
+
+                su - rpetrie -c 'cd /home/rpetrie/workspace/ember_hearts && bash run.sh'
 
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### Clone repo and run container for site dm
@@ -258,7 +263,7 @@ resource "aws_instance" "ethorian_net_home" {
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ #
                 ### End script and show execution time
 
-                docker start ethorian-home ethorian-brindlings || true
+                docker start ethorian-home ethorian-brindlings ember-hearts || true
                 docker ps -a
 
                 # echo completion
